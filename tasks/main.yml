@@ -1,0 +1,63 @@
+---
+- name: Ensure openssl is installed
+  yum:
+    name: openssl
+    state: present
+
+- name: Create bitwarden user
+  user:
+    name: bitwarden
+    shell: /sbin/nologin
+    create_home: no
+    state: present
+
+- name: Ensure bitwarden directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: bitwarden
+    group: bitwarden
+    mode: u=rwx,g=rx,o=x
+  loop:
+    - /etc/bitwarden
+    - /var/lib/bitwarden
+    - /var/lib/bitwarden/web-vault
+
+- name: Copy bitwarden web-vault files
+  unarchive:
+    src: web-vault.tar.gz
+    dest: /var/lib/bitwarden/web-vault
+    owner: bitwarden
+    group: bitwarden
+    mode: u=rwx,g=rx,o=
+
+- name: Copy bitwarden config
+  copy:
+    src: bitwarden.conf
+    dest: /etc/bitwarden/bitwarden.conf
+    owner: bitwarden
+    group: bitwarden
+    mode: u=rw,g=r,o=
+
+- name: Copy bitwarden binary
+  copy:
+    src: bitwarden
+    dest: /usr/bin/bitwarden
+    owner: bitwarden
+    group: root
+    mode: u=rwx,g=rx,o=
+
+- name: Create bitwarden systemd service
+  copy:
+    src: bitwarden.service
+    dest: /etc/systemd/system/bitwarden.service
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Ensure bitwarden service is enabled and started
+  systemd:
+    name: bitwarden
+    state: started
+    enabled: yes
+    daemon_reload: yes
