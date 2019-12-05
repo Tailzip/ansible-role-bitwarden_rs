@@ -1,0 +1,95 @@
+---
+- name: Check 'bitwarden_compiled_binary' variable is set
+  assert:
+    that:
+        - bitwarden_compiled_binary is defined
+        - bitwarden_compiled_binary | length > 0
+    quiet: yes
+
+- name: Check 'bitwarden_web_vault_archive' variable is set
+  assert:
+    that:
+        - bitwarden_web_vault_archive is defined
+        - bitwarden_web_vault_archive | length > 0
+    quiet: yes
+
+- name: Ensure openssl is installed
+  yum:
+    name: openssl
+    state: present
+
+- name: Create bitwarden user
+  user:
+    name: bitwarden
+    shell: /sbin/nologin
+    create_home: no
+    state: present
+
+- name: Ensure required bitwarden directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: bitwarden
+    group: bitwarden
+    mode: u=rwx,g=rx,o=x
+  loop:
+    - /etc/bitwarden
+    - /var/lib/bitwarden
+    - /var/lib/bitwarden/web-vault
+
+- name: Create bitwarden.log file
+  file:
+    path: /var/log/bitwarden.log
+    owner: bitwarden
+    group: root
+    state: touch
+    mode: u=rw,g=r,o=
+    modification_time: preserve
+    access_time: preserve
+
+- name: Copy bitwarden web vault files
+  unarchive:
+    src: "{{ bitwarden_web_vault_archive }}"
+    dest: /var/lib/bitwarden/web-vault
+    owner: bitwarden
+    group: bitwarden
+    mode: u=rx,g=rx,o=
+  notify:
+    - Restart bitwarden
+
+- name: Copy bitwarden environment config
+  template:
+    src: bitwarden.env.j2
+    dest: /etc/bitwarden/bitwarden.env
+    owner: bitwarden
+    group: bitwarden
+    mode: u=rw,g=r,o=
+  notify:
+    - Restart bitwarden
+
+- name: Copy bitwarden binary
+  copy:
+    src: "{{ bitwarden_compiled_binary }}"
+    dest: /usr/bin/bitwarden
+    owner: bitwarden
+    group: root
+    mode: u=rwx,g=rx,o=
+  notify:
+    - Restart bitwarden
+
+- name: Create bitwarden systemd service
+  copy:
+    src: bitwarden.service
+    dest: /etc/systemd/system/bitwarden.service
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - Restart bitwarden
+
+- name: Ensure bitwarden service is enabled and started
+  systemd:
+    name: bitwarden
+    state: started
+    enabled: yes
+    daemon_reload: yes

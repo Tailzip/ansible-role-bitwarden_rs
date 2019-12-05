@@ -1,0 +1,6 @@
+---
+- name: Restart bitwarden
+  systemd:
+    name: bitwarden
+    state: restarted
+    daemon_reload: yes

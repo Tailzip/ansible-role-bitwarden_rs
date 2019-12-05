@@ -1,0 +1,19 @@
+[Unit]
+Description=Bitwarden Server (Rust Edition)
+After=network.target
+
+[Service]
+User=bitwarden
+Group=bitwarden
+EnvironmentFile=/etc/bitwarden/bitwarden.env
+ExecStart=/usr/bin/bitwarden
+LimitNOFILE=1048576
+LimitNPROC=64
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+WorkingDirectory=/var/lib/bitwarden
+ReadWriteDirectories=/var/lib/bitwarden
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,4 @@
+bitwarden_rs
+__pycache__
+*.log
+tmp

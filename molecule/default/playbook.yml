@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    bitwarden_compiled_binary: tmp/bitwarden
+    bitwarden_web_vault_archive: tmp/web-vault.tar.gz
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"

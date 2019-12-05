@@ -1,0 +1,6 @@
+---
+bitwarden_domain: false
+bitwarden_compiled_binary: ''
+bitwarden_web_vault_archive: ''
+bitwarden_address: '0.0.0.0'
+bitwarden_port: 8000
