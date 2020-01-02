@@ -16,6 +16,7 @@ def test_user(host):
     assert user.shell == '/sbin/nologin'
     assert not host.file('/home/bitwarden').exists
 
+
 def test_service(host):
     service = host.service('bitwarden')
 
